@@ -1,4 +1,4 @@
-(function(global) {
+(function(global, $) {
     var raise = function(errorType, message) {
       var errorToString = errorType + ': ' + message;
       
@@ -10,8 +10,9 @@
         }
       };
     };    
-    var namespace = function(path) {
+    var namespace = function(path, parent) {
       path = (path || '').toString();
+      parent = (parent || $);
       
       if (path.length <= 0) {
         raise('ArgumentError', 'Namespace path must be a non-empty string!');        
@@ -22,8 +23,13 @@
           return parent;
         }
         
-        var next = elements.shift(),
-            child = parent[next];
+        var childName = elements.shift();
+        
+        if (childName.length <= 0) {
+          raise('NamespaceError', 'Namespace element is empty!');
+        }
+        
+        var child = parent[childName];
         
         if (child) {
           if (typeof child !== 'object') {
@@ -31,16 +37,16 @@
           }
         } else {
           child = {};
-          parent[next] = child;
+          parent[childName] = child;
         }
         
         return createNamespace(child, elements);
       };
       
-      return createNamespace(global, path.split(/\s*\.\s*/));            
+      return createNamespace(parent, path.split(/\s*\.\s*/));            
     };
     
-    namespace('fm.core').namespace = namespace;
+    namespace('fm.core').ns = namespace;
     namespace('fm.core').raise = raise;
-})(this);
+})(this, (this.jQuery || this));
 
