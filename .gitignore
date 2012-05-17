@@ -1,11 +1,10 @@
 /lib/**
 /out/**
 /classes/**
+/nbproject/**
 *.class
 *.jar
-*.iml
-*.ipr
-*.iws
-.lein-deps-sum
 *~
+build.xml
+manifest.mf
 
