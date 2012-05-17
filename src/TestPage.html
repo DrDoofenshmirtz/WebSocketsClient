@@ -8,18 +8,33 @@
   </head>
   <body>
     <script>
-      (function(global, $) {      
-        var connection = $.fm.ws.makeConnection('perry', 17500, 'ws-server', {
-          onError: function(error) {
-            global.console.log('onError: ' + error);
-          },
-          onMessageSent: function(message) {
-            global.console.log('onMessageSent: ' + message);
-          },
-          onMessageReceived: function(message) {
-            global.console.log('onMessageReceived: ' + message);
-          }
-        });
+      (function(global, $) {
+        var attempts = 0,         
+            connection = $.fm.ws.makeConnection('perry', 17500, 'ws-server', {
+              onError: function(error) {
+                global.console.log('onError: ' + error);
+              },
+              onRetryConnect: function(error) {
+                global.console.log('onRetryConnect: ' + error);                
+                attempts = attempts + 1;
+                
+                if (attempts < 5) {
+                  global.console.log('Retry to connect...');                
+                  
+                  return true;
+                } else {
+                  global.console.log('Close connection!');
+                  
+                  return false;
+                }                               
+              },
+              onMessageSent: function(message) {
+                global.console.log('onMessageSent: ' + message);
+              },
+              onMessageReceived: function(message) {
+                global.console.log('onMessageReceived: ' + message);
+              }
+            });
         
         connection.open();
       })(this, (this.jQuery || this));

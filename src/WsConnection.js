@@ -5,6 +5,7 @@
     }
     
     var webSocket,
+        retryTaskId,
         destroyed;
     
     var produce = function() {
@@ -25,7 +26,7 @@
           detachHandlers(webSocket);
           eventHandler.onClose(webSocket);
           webSocket = undefined;
-          global.setTimeout(produce, retryDelayMillis);
+          retryTaskId = global.setTimeout(produce, retryDelayMillis);
         };
         webSocket.onmessage = function(event) {
           if (destroyed) {
@@ -51,13 +52,21 @@
       webSocket.onerror = undefined;
     };
     
+    var stopRetryTask = function() {
+      if (retryTaskId) {
+        global.clearTimeout(retryTaskId);
+        retryTaskId = undefined;
+      }
+    };
+    
     var destroy = function() {
       if (destroyed) {
         return;
       }
       
       destroyed = true;
-      
+      stopRetryTask();
+            
       if (webSocket) {
         detachHandlers(webSocket);
         webSocket.close();
@@ -90,7 +99,11 @@
             }
           },
           onError: function(socket, error) {
-            if (!webSocket || (socket === webSocket)) {
+            if (!webSocket) {
+              if (eventHandler.onRetryConnect(error) === false) {
+                close();
+              }              
+            } else if (socket === webSocket) {
               eventHandler.onError(error);
             }
           },
