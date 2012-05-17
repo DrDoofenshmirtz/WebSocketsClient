@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>  
+  <head>
+    <meta charset=utf-8>
+    <h1>WebSockets Client Test Page</h1>
+    <script src='FmCore.js'></script>   
+    <script src='WsConnection.js'></script>   
+  </head>
+  <body>
+    <script>
+      (function(global, $) {      
+        var connection = $.fm.ws.makeConnection('perry', 17500, 'ws-server', {
+          onError: function(error) {
+            global.console.log('onError: ' + error);
+          },
+          onMessageSent: function(message) {
+            global.console.log('onMessageSent: ' + message);
+          },
+          onMessageReceived: function(message) {
+            global.console.log('onMessageReceived: ' + message);
+          }
+        });
+        
+        connection.open();
+      })(this, (this.jQuery || this));
+    </script>   
+  </body>
+</html>
+

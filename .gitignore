@@ -1,0 +1,11 @@
+/lib/**
+/out/**
+/classes/**
+*.class
+*.jar
+*.iml
+*.ipr
+*.iws
+.lein-deps-sum
+*~
+

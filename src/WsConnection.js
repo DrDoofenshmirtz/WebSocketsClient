@@ -1,0 +1,164 @@
+(function(global, $) {
+  var makeSocketProducer = function(url, retryDelayMillis, eventHandler) {
+    if (!global.WebSocket) {
+      $.fm.core.raise('ConnectionError', 'WebSockets are not supported!');
+    }
+    
+    var webSocket,
+        destroyed;
+    
+    var produce = function() {
+      if (!destroyed && !webSocket) {
+        webSocket = new global.WebSocket(url);
+        webSocket.onopen = function(event) {
+          if (destroyed) {
+            return;
+          }
+          
+          eventHandler.onReady(webSocket);
+        };
+        webSocket.onclose = function(event) {
+          if (destroyed) {
+            return;
+          }
+          
+          detachHandlers(webSocket);
+          eventHandler.onClose(webSocket);
+          webSocket = undefined;
+          global.setTimeout(produce, retryDelayMillis);
+        };
+        webSocket.onmessage = function(event) {
+          if (destroyed) {
+            return;
+          }
+          
+          eventHandler.onMessage(webSocket, event.data);
+        };
+        webSocket.onerror = function(error) {
+          if (destroyed) {
+            return;
+          }
+          
+          eventHandler.onError(webSocket, error);
+        };
+      }            
+    }
+    
+    var detachHandlers = function(webSocket) {
+      webSocket.onopen = undefined;
+      webSocket.onclose = undefined;
+      webSocket.onmessage = undefined;
+      webSocket.onerror = undefined;
+    };
+    
+    var destroy = function() {
+      if (destroyed) {
+        return;
+      }
+      
+      destroyed = true;
+      
+      if (webSocket) {
+        detachHandlers(webSocket);
+        webSocket.close();
+        webSocket = undefined;
+      }
+    };
+    
+    return {produce: produce, destroy: destroy};
+  };
+    
+  var makeConnection = function(host, port, serviceName, eventHandler) {
+    var socketProducer,
+        messages = [],
+        sendTaskId,
+        webSocket;
+        
+    var open = function() {
+      var url = 'ws://' + host + ':' + port + '/' + serviceName;
+      
+      if (!socketProducer) {
+        socketProducer = makeSocketProducer(url, 2000, {
+          onReady: function(socket) {
+            if (!webSocket) {
+              webSocket = socket;
+            }
+          },
+          onMessage: function(socket, message) {
+            if (socket === webSocket) {
+              eventHandler.onMessageReceived(message);
+            }
+          },
+          onError: function(socket, error) {
+            if (!webSocket || (socket === webSocket)) {
+              eventHandler.onError(error);
+            }
+          },
+          onClose: function(socket) {
+            if (socket === webSocket) {
+              webSocket = undefined;
+            }
+          }
+        });
+        socketProducer.produce();
+      }
+    };
+        
+    var stopSendTask = function() {
+      if (sendTaskId) {
+        global.clearInterval(sendTaskId);
+        sendTaskId = undefined;
+      }
+    };    
+        
+    var send = function(message) {
+      if (!socketProducer) {
+        $.fm.core.raise('ConnectionError', 'Connection is closed!');
+      }
+      
+      var currentMessage;
+      
+      var sendPendingMessages = function() {
+        if (!socketProducer) {
+          currentMessage = undefined;
+          stopSendTask();                    
+        } else if (webSocket) {
+          if (webSocket.bufferedAmount <= 0) {
+            if (currentMessage) {
+              eventHandler.onMessageSent(currentMessage);
+            }
+            
+            currentMessage = messages.shift();
+            
+            if (currentMessage) {
+              webSocket.send(currentMessage);
+            } else {
+              stopSendTask();
+            }
+          }
+        }
+      } 
+      
+      if ((messages.push(message) === 1) && !sendTaskId) {
+        sendTaskId = global.setInterval(sendPendingMessages, 25);
+      }
+    };
+    
+    var close = function() {
+      var producer = socketProducer;
+      
+      socketProducer = undefined;
+      webSocket = undefined;
+      
+      if (producer) {
+        messages.length = 0;        
+        producer.destroy(); 
+        stopSendTask();
+      }
+    };
+                
+    return {open: open, send: send, close: close};        
+  };
+  
+  $.fm.core.ns('fm.ws').makeConnection = makeConnection;
+})(this, (this.jQuery || this));
