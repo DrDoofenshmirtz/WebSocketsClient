@@ -33,15 +33,22 @@
               },
               onMessageReceived: function(message) {
                 global.console.log('onMessageReceived: ' + message);
+              },
+              onConnectionClosed: function() {
+                global.console.log('onConnectionClosed');                
               }
-            });
+            }),
+            rpcSuccess = JSON.stringify({id: 1, 
+                                         method: 'wsSuccess', 
+                                         params: [{magicNumber: 42}]}),
+            rpcError = JSON.stringify({id: 2, 
+                                       method: 'wsError', 
+                                       params: [{magicNumber: 42}]});
         
         connection.open();
-        connection.send('ABC');
-        connection.send('DEF');
-        connection.send('GHI');
+        connection.send(rpcSuccess);
+        connection.send(rpcError);
       })(this, (this.jQuery || this));
     </script>   
   </body>
 </html>
-

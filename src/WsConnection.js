@@ -168,6 +168,8 @@
         producer.destroy(); 
         stopSendTask();
       }
+      
+      eventHandler.onConnectionClosed();
     };
                 
     return {open: open, send: send, close: close};        
