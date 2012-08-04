@@ -19,7 +19,11 @@
           }
         });
         
+        client.defReceiver('connectionAcknowledged', function(connectionId) {
+          global.console.log('Connection Id: ' + connectionId);           
+        });
         client.defRequest('wsSuccess');
+        client.defRequest('wsError');        
         global.onload = function() {
           global.alert('WsClient');
           client.open();
@@ -28,7 +32,15 @@
               global.console.log('onSuccess: ' + result);            
             },
             onFailure: function(error) {
-              global.console.log('onFailure: ' + error);            
+              global.console.log('onFailure: ' + error.message);            
+            }            
+          });
+          client.wsError(42, {
+            onSuccess: function(result) {
+              global.console.log('onSuccess: ' + result);            
+            },
+            onFailure: function(error) {
+              global.console.log('onFailure: ' + error.message);            
             }            
           });
         };
