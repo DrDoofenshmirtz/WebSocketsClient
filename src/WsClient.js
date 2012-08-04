@@ -9,7 +9,7 @@
               handleError(error);
             }
           },
-          onRetryConnect: function(error) {
+          onRetryConnect: function(error) {            
             return false;                               
           },
           onMessageSent: function(message) {          
@@ -27,7 +27,7 @@
         });
         
     var Receiver = function(receiver) {
-      this.receive = new function() {
+      this.receive = function() {
         if (connectionOpen) {
           receiver.apply(client, arguments);
         }
