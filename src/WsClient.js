@@ -128,7 +128,9 @@
       connectionOpen = false;
       responseHandlers = resetResponseHandlers();      
                        
-      try {connection.close();} catch (ignored) {}
+      try {
+        connection.close();
+      } catch (ignored) {}
       
       disposeResponseHandlers(responseHandlers);
       connectionHandler.onClose();
