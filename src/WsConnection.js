@@ -91,6 +91,7 @@
           onReady: function(socket) {
             if (!webSocket) {
               webSocket = socket;
+              eventHandler.onConnectionOpened();
             }
           },
           onMessage: function(socket, message) {
@@ -99,17 +100,14 @@
             }
           },
           onError: function(socket, error) {
-            if (!webSocket) {
-              if (eventHandler.onRetryConnect(error) === false) {
-                close();
-              }              
-            } else if (socket === webSocket) {
+            if (socket === webSocket) {
               eventHandler.onError(error);
             }
           },
           onClose: function(socket) {
             if (socket === webSocket) {
               webSocket = undefined;
+              eventHandler.onConnectionClosed();
             }
           }
         });
@@ -138,6 +136,7 @@
         } else if (webSocket) {
           if (webSocket.bufferedAmount <= 0) {
             if (currentMessage) {
+              // TODO: how to utilize this? May be obsolete!
               eventHandler.onMessageSent(currentMessage);
             }
             
@@ -158,18 +157,21 @@
     };
     
     var close = function() {
-      var producer = socketProducer;
+      var activeProducer = socketProducer,
+          activeSocket = webSocket;
       
       socketProducer = undefined;
       webSocket = undefined;
       
-      if (producer) {
+      if (activeProducer) {
         messages.length = 0;        
-        producer.destroy(); 
+        activeProducer.destroy(); 
         stopSendTask();
-      }
-      
-      eventHandler.onConnectionClosed();
+        
+        if (activeSocket) {
+          eventHandler.onConnectionClosed();
+        }
+      }            
     };
                 
     return {open: open, send: send, close: close};        

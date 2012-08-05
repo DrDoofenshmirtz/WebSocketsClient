@@ -14,6 +14,25 @@
           onError: function(error) {
             global.console.log('Connection Error: ' + error);            
           },
+          onOpen: function() {
+            global.console.log('Connection opened.');            
+            client.wsSuccess(42, {
+              onSuccess: function(result) {
+                global.console.log('onSuccess: ' + result);            
+              },
+              onFailure: function(error) {
+                global.console.log('onFailure: ' + error.message);            
+              }            
+            });
+            client.wsError(42, {
+              onSuccess: function(result) {
+                global.console.log('onSuccess: ' + result);            
+              },
+              onFailure: function(error) {
+                global.console.log('onFailure: ' + error.message);            
+              }            
+            });
+          },
           onClose: function() {
             global.console.log('Connection closed.');            
           }
@@ -26,23 +45,7 @@
         client.defRequest('wsError');        
         global.onload = function() {
           global.alert('WsClient');
-          client.open();
-          client.wsSuccess(42, {
-            onSuccess: function(result) {
-              global.console.log('onSuccess: ' + result);            
-            },
-            onFailure: function(error) {
-              global.console.log('onFailure: ' + error.message);            
-            }            
-          });
-          client.wsError(42, {
-            onSuccess: function(result) {
-              global.console.log('onSuccess: ' + result);            
-            },
-            onFailure: function(error) {
-              global.console.log('onFailure: ' + error.message);            
-            }            
-          });
+          client.open();          
         };
       })(this, (this.jQuery || this));
     </script>   

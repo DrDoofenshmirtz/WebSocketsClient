@@ -9,10 +9,13 @@
               handleError(error);
             }
           },
-          onRetryConnect: function(error) {            
-            return false;                               
+          onConnectionOpened: function() {
+            if (connectionOpen) {
+              handleConnectionOpened();
+            }
           },
           onMessageSent: function(message) {          
+            // TODO: how to utilize this? May be obsolete!
           },
           onMessageReceived: function(message) {
             if (connectionOpen) {
@@ -56,6 +59,10 @@
       disposeResponseHandlers(resetResponseHandlers());      
       connectionHandler.onError(error);
     };    
+    
+    var handleConnectionOpened = function() {
+      connectionHandler.onOpen();
+    };
         
     var handleMessageReceived = function(message) {
       var responseData;
@@ -102,9 +109,8 @@
         responseHandler.onFailure(response.error);
       }
     };
-
+    
     var handleConnectionClosed = function() {
-      connectionOpen = false;
       disposeResponseHandlers(resetResponseHandlers());
       connectionHandler.onClose();
     };

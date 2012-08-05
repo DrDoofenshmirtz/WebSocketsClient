@@ -9,24 +9,20 @@
   <body>
     <script>
       (function(global, $) {
-        var attempts = 0,         
+        var rpcSuccess = JSON.stringify({id: 1, 
+                                         method: 'wsSuccess', 
+                                         params: [{magicNumber: 42}]}),
+            rpcError = JSON.stringify({id: 2, 
+                                       method: 'wsError', 
+                                       params: [{magicNumber: 42}]}),                 
             connection = $.fm.ws.makeConnection('perry', 17500, 'ws-server', {
               onError: function(error) {
                 global.console.log('onError: ' + error);
               },
-              onRetryConnect: function(error) {
-                global.console.log('onRetryConnect: ' + error);                
-                attempts = attempts + 1;
-                
-                if (attempts < 5) {
-                  global.console.log('Retry to connect...');                
-                  
-                  return true;
-                } else {
-                  global.console.log('Close connection!');
-                  
-                  return false;
-                }                               
+              onConnectionOpened: function() {
+                global.console.log('onConnectionOpened');
+                connection.send(rpcSuccess);
+                connection.send(rpcError);
               },
               onMessageSent: function(message) {
                 global.console.log('onMessageSent: ' + message);
@@ -37,17 +33,9 @@
               onConnectionClosed: function() {
                 global.console.log('onConnectionClosed');                
               }
-            }),
-            rpcSuccess = JSON.stringify({id: 1, 
-                                         method: 'wsSuccess', 
-                                         params: [{magicNumber: 42}]}),
-            rpcError = JSON.stringify({id: 2, 
-                                       method: 'wsError', 
-                                       params: [{magicNumber: 42}]});
-        
-        connection.open();
-        connection.send(rpcSuccess);
-        connection.send(rpcError);
+            });
+            
+        connection.open();        
       })(this, (this.jQuery || this));
     </script>   
   </body>
