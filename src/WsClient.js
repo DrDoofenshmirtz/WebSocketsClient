@@ -2,15 +2,16 @@
   var makeClient = function(host, port, serviceName, connectionHandler) {
     var client = {},
         responseHandlers = {},
-        connectionOpen = false,
+        closed = true,
+        connectionId,
         connection = $.fm.ws.makeConnection(host, port, serviceName, {
           onError: function(error) {
-            if (connectionOpen) {
+            if (!closed) {
               handleError(error);
             }
           },
           onConnectionOpened: function() {
-            if (connectionOpen) {
+            if (!closed) {
               handleConnectionOpened();
             }
           },
@@ -18,12 +19,12 @@
             // TODO: how to utilize this? May be obsolete!
           },
           onMessageReceived: function(message) {
-            if (connectionOpen) {
+            if (!closed) {
               handleMessageReceived(message);
             }                       
           },
           onConnectionClosed: function() {
-            if (connectionOpen) {
+            if (!closed) {
               handleConnectionClosed();
             }
           }        
@@ -31,7 +32,7 @@
         
     var Receiver = function(receiver) {
       this.receive = function() {
-        if (connectionOpen) {
+        if (!closed) {
           receiver.apply(client, arguments);
         }
       };
@@ -61,7 +62,8 @@
     };    
     
     var handleConnectionOpened = function() {
-      connectionHandler.onOpen();
+      connectionId = undefined;
+      disposeResponseHandlers(resetResponseHandlers());
     };
         
     var handleMessageReceived = function(message) {
@@ -111,27 +113,30 @@
     };
     
     var handleConnectionClosed = function() {
+      connectionId = undefined;
       disposeResponseHandlers(resetResponseHandlers());
       connectionHandler.onClose();
     };
                             
     client.open = function() {
-      if (connectionOpen) {
+      if (!closed) {
         return;
       }
             
-      connection.open();      
-      connectionOpen = true;
+      closed = false;
+      connectionId = undefined;
+      connection.open();            
     };
     
     client.close = function() {
       var responseHandlers;
       
-      if (!connectionOpen) {
+      if (closed) {
         return;
       }
       
-      connectionOpen = false;
+      closed = true;
+      connectionId = undefined;
       responseHandlers = resetResponseHandlers();      
                        
       try {
@@ -152,9 +157,9 @@
       return name;
     };
     
-    var ensureConnectionIsOpen = function() {
-      if (!connectionOpen) {
-        $.fm.core.raise('ConnectionError', 'Connection is closed!');
+    var ensureIsConnected = function() {
+      if (closed || !connectionId) {
+        $.fm.core.raise('ConnectionError', 'Client is disconnected!');
       }
     };
     
@@ -172,11 +177,11 @@
         
     client.defRequest = function(name) {
       this[validateSlotName(name)] = function() {
-        ensureConnectionIsOpen();
+        ensureIsConnected();
         
         var args = Array.prototype.slice.call(arguments),
             responseHandler = args.pop(),
-            requestId = nextRequestId(),
+            requestId = connectionId + '.' + nextRequestId(),
             requestData = {id: requestId, method: name, params: args};
             
         if (!responseHandler) {
@@ -191,7 +196,7 @@
     
     client.defNotification = function(name) {
       this[validateSlotName(name)] = function() {
-        ensureConnectionIsOpen();
+        ensureIsConnected();
         
         var args = Array.prototype.slice.call(arguments),
             requestData = {id: null, method: name, params: args};
@@ -206,8 +211,19 @@
         $.fm.core.raise('ArgumentError', 'Missing receiver!');
       }
       
-      this[validateSlotName(name)] = new Receiver(receiver);  
+      name = validateSlotName(name);
+      
+      if (name === 'connectionAcknowledged') {
+        $.fm.core.raise('ArgumentError', 'Illegal name for receiver slot!');
+      }
+      
+      this[name] = new Receiver(receiver);  
     };
+    
+    client.connectionAcknowledged = new Receiver(function(id) {
+      connectionId = id;
+      connectionHandler.onOpen();
+    });
         
     return client;                
   };

@@ -38,9 +38,6 @@
           }
         });
         
-        client.defReceiver('connectionAcknowledged', function(connectionId) {
-          global.console.log('Connection Id: ' + connectionId);           
-        });
         client.defRequest('wsSuccess');
         client.defRequest('wsError');        
         global.onload = function() {
