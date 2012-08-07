@@ -115,7 +115,7 @@
     var handleConnectionClosed = function() {
       connectionId = undefined;
       disposeResponseHandlers(resetResponseHandlers());
-      connectionHandler.onClose();
+      connectionHandler.onDisconnect();
     };
                             
     client.open = function() {
@@ -144,7 +144,7 @@
       } catch (ignored) {}
       
       disposeResponseHandlers(responseHandlers);
-      connectionHandler.onClose();
+      connectionHandler.onDisconnect();
     };
     
     var validateSlotName = function(name) {
@@ -222,7 +222,7 @@
     
     client.connectionAcknowledged = new Receiver(function(id) {
       connectionId = id;
-      connectionHandler.onOpen();
+      connectionHandler.onConnect();
     });
         
     return client;                

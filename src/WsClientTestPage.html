@@ -14,8 +14,8 @@
           onError: function(error) {
             global.console.log('Connection Error: ' + error);            
           },
-          onOpen: function() {
-            global.console.log('Connection opened.');            
+          onConnect: function() {
+            global.console.log('Client connected.');            
             client.wsSuccess(42, {
               onSuccess: function(result) {
                 global.console.log('onSuccess: ' + result);            
@@ -33,8 +33,8 @@
               }            
             });
           },
-          onClose: function() {
-            global.console.log('Connection closed.');            
+          onDisconnect: function() {
+            global.console.log('Client disconnected.');            
           }
         });
         
