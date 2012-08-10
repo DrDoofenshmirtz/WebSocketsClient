@@ -10,9 +10,14 @@
               handleError(error);
             }
           },
-          onConnectionOpened: function() {
+          onConnectFailed: function() {
             if (!closed) {
-              handleConnectionOpened();
+              handleConnectFailed();
+            }
+          },
+          onConnect: function() {
+            if (!closed) {
+              handleConnect();
             }
           },
           onMessageSent: function(message) {          
@@ -23,9 +28,9 @@
               handleMessageReceived(message);
             }                       
           },
-          onConnectionClosed: function() {
+          onDisconnect: function() {
             if (!closed) {
-              handleConnectionClosed();
+              handleDisconnect();
             }
           }        
         });
@@ -59,9 +64,15 @@
     var handleError = function(error) {
       disposeResponseHandlers(resetResponseHandlers());      
       connectionHandler.onError(error);
-    };    
+    };
+
+    var handleConnectFailed = function() {
+      connectionId = undefined;
+      disposeResponseHandlers(resetResponseHandlers());
+      connectionHandler.onConnectFailed();
+    }
     
-    var handleConnectionOpened = function() {
+    var handleConnect = function() {
       connectionId = undefined;
       disposeResponseHandlers(resetResponseHandlers());
     };
@@ -112,7 +123,7 @@
       }
     };
     
-    var handleConnectionClosed = function() {
+    var handleDisconnect = function() {
       connectionId = undefined;
       disposeResponseHandlers(resetResponseHandlers());
       connectionHandler.onDisconnect();

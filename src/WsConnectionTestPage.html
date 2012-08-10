@@ -19,8 +19,11 @@
               onError: function(error) {
                 global.console.log('onError: ' + error);
               },
-              onConnectionOpened: function() {
-                global.console.log('onConnectionOpened');
+              onConnectFailed: function() {
+                global.console.log('onConnectFailed');                
+              },
+              onConnect: function() {
+                global.console.log('onConnect');
                 connection.send(rpcSuccess);
                 connection.send(rpcError);
               },
@@ -30,8 +33,8 @@
               onMessageReceived: function(message) {
                 global.console.log('onMessageReceived: ' + message);
               },
-              onConnectionClosed: function() {
-                global.console.log('onConnectionClosed');                
+              onDisconnect: function() {
+                global.console.log('onDisconnect');                
               }
             });
             

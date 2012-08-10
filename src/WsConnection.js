@@ -91,7 +91,7 @@
           onReady: function(socket) {
             if (!webSocket) {
               webSocket = socket;
-              eventHandler.onConnectionOpened();
+              eventHandler.onConnect();
             }
           },
           onMessage: function(socket, message) {
@@ -105,9 +105,11 @@
             }
           },
           onClose: function(socket) {
-            if (socket === webSocket) {
+            if (!webSocket) {
+              eventHandler.onConnectFailed();
+            } else if (socket === webSocket) {
               webSocket = undefined;
-              eventHandler.onConnectionClosed();
+              eventHandler.onDisconnect();
             }
           }
         });
