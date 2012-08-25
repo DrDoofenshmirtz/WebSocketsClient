@@ -92,7 +92,7 @@
         return; 
       }
                         
-      if (responseData.id) {
+      if (responseData.id !== null) {
         handleResponse(responseData);        
       } else {
         handleNotification(responseData);
@@ -116,9 +116,9 @@
         return;
       }
 
-      if (response.result) {
+      if (response.result !== null) {
         responseHandler.onSuccess(response.result);
-      } else if (response.error) {
+      } else if (response.error !== null) {
         responseHandler.onFailure(response.error);
       }
     };
