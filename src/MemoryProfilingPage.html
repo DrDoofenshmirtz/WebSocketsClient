@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>  
+  <head>
+    <meta charset=utf-8>
+    <h1>Memory Profiling Page</h1>
+    <script src='FmCore.js'></script>   
+    <script src='WsConnection.js'></script>   
+    <script src='WsClient.js'></script>
+  </head>
+  <body>
+    <script>
+      (function(global, $) {
+        var data = [],
+            client = $.fm.ws.makeClient(
+              'perry', 17500, 'memory-profiling-service', {
+              onError: function(error) {
+                global.console.log('Connection Error: ' + error);            
+              },
+              onConnectFailed: function() {
+                global.console.log('Connect failed!');            
+              },
+              onConnect: function() {
+                var request = function() {
+                  client.handleRequest(data, {
+                    onSuccess: function(result) {
+                      global.console.log('onSuccess: ' + result);
+                      global.setTimeout(request, 1000);
+                    },
+                    onFailure: function(error) {
+                      global.console.log('onFailure: ' + error.message);            
+                    }            
+                  });
+                };
+                
+                global.console.log('Client connected.');
+                
+                for (var i = 0; i< 1000; ++i) {
+                  data.push("entry_" + i);
+                }
+                
+                request();
+              },
+              onDisconnect: function() {
+                global.console.log('Client disconnected.');            
+              }
+            });
+        
+        client.defRequest('handleRequest');
+        global.onload = function() {
+          client.open();          
+        };
+      })(this, (this.jQuery || this));
+    </script>   
+  </body>
+</html>
