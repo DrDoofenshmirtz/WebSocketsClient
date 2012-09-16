@@ -24,7 +24,7 @@
                   client.handleRequest(data, {
                     onSuccess: function(result) {
                       global.console.log('onSuccess: ' + result);
-                      global.setTimeout(request, 1000);
+                      global.setTimeout(request, 5000);
                     },
                     onFailure: function(error) {
                       global.console.log('onFailure: ' + error.message);            
@@ -32,12 +32,7 @@
                   });
                 };
                 
-                global.console.log('Client connected.');
-                
-                for (var i = 0; i< 1000; ++i) {
-                  data.push("entry_" + i);
-                }
-                
+                global.console.log('Client connected.');                                
                 request();
               },
               onDisconnect: function() {
@@ -45,6 +40,10 @@
               }
             });
         
+        for (var i = 0; i < 25; ++i) {
+          data.push("entry_" + i);
+        }
+
         client.defRequest('handleRequest');
         global.onload = function() {
           client.open();          
