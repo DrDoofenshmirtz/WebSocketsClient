@@ -24,7 +24,7 @@
                   client.handleRequest(data, {
                     onSuccess: function(result) {
                       global.console.log('onSuccess: ' + result);
-                      global.setTimeout(request, 5000);
+                      global.setTimeout(request, 1000);
                     },
                     onFailure: function(error) {
                       global.console.log('onFailure: ' + error.message);            
