@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>  
+  <head>
+    <meta charset=utf-8>
+    <h1>File Upload Demo</h1>
+    <script src='FmCore.js'></script>
+    <script src='FmFiles.js'></script>
+    <script src='WsConnection.js'></script>   
+    <script src='WsClient.js'></script>
+  </head>
+  <body>
+    <div>
+      <div style="display: inline">
+        <span>
+          Please select a file to upload:
+          <input type="file" id="fileSelection" />
+        </span>
+      </div>
+      <div style="display: inline">
+        <button id="uploadButton">Upload</button>
+      </div>
+    </div>
+    <script>
+      (function(global, $) {
+        var upload,
+            connected;
+        
+        var client = $.fm.ws.makeClient('perry', 17500, 'file-upload', {
+          onError: function(error) {
+            global.console.log('Connection Error: ' + error);            
+            connected = false;
+          },
+          onConnectFailed: function() {
+            global.console.log('Connect failed!');            
+            connected = false;
+          },
+          onConnect: function() {
+            global.console.log('Client connected.');                        
+            connected = true;
+          },
+          onDisconnect: function() {
+            global.console.log('Client disconnected.');            
+            connected = false;
+          }
+        });        
+        var uploadNextSlice = function(slice) {
+          if (slice.endOfFile) {
+            client.uploadFile(upload.fileName, upload.id, null, {
+              onSuccess: function(result) {
+                global.console.log('uploadFile-onSuccess: ' + result);
+                upload = undefined;                
+              },
+              onFailure: function(error) {
+                global.console.log('uploadFile-onFailure: ' + error.message);            
+              }            
+            });
+          } else {
+            client.uploadFile(upload.fileName, upload.id, slice.data, {
+              onSuccess: function(result) {
+                global.console.log('uploadFile-onSuccess: ' + result);
+                
+                if (result === true) {
+                  upload = undefined;
+                } else {
+                  upload.id = result;
+                  slice.next();                
+                }                
+              },
+              onFailure: function(error) {
+                global.console.log('uploadFile-onFailure: ' + error.message);            
+              }            
+            });
+          }                    
+        };        
+        var uploadFile = function(file) {
+          upload = {id: null, fileName: file.name};
+          $.fm.files.slice(file, {size: 128, onSlice: uploadNextSlice});
+        };
+        
+        client.defRequest('uploadFile');        
+        global.onload = function() {
+          global.document
+            .getElementById('uploadButton')
+            .addEventListener('click', function() {
+              var files = global.document.getElementById('fileSelection').files;
+             
+              if (connected && !upload && (files.length > 0)) {
+                uploadFile(files[0]);
+              }
+            });          
+          client.open();          
+        };
+      })(this, (this.jQuery || this));
+    </script>   
+  </body>
+</html>
