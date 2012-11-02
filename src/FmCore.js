@@ -1,14 +1,17 @@
 (function(global, $) {
-    var raise = function(errorType, message) {
+    var makeError = function(errorType, message) {
       var errorToString = errorType + ': ' + message;
       
-      throw {
+      return {
         errorType: errorType,
         message: message,
         toString: function() { 
           return errorToString; 
         }
       };
+    };
+    var raise = function(errorType, message) {
+      throw makeError(errorType, message);
     };    
     var namespace = function(path, parent) {
       path = (path || '').toString();
@@ -47,6 +50,7 @@
     };
     
     namespace('fm.core').ns = namespace;
+    namespace('fm.core').makeError = makeError;
     namespace('fm.core').raise = raise;
 })(this, (this.jQuery || this));
 
