@@ -74,7 +74,7 @@
         };        
         var uploadFile = function(file) {
           upload = {id: null, fileName: file.name};
-          $.fm.files.slice(file, {size: 128, onSlice: uploadNextSlice});
+          $.fm.files.slice(file, {size: (10 * 1024), onSlice: uploadNextSlice});
         };
         
         client.defRequest('uploadFile');        
