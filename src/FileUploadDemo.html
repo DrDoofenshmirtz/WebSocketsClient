@@ -24,57 +24,105 @@
       (function(global, $) {
         var upload,
             connected;
-        
+                
+        var resetUpload = function() {
+          upload = undefined;
+        };
+        var connectedStateChanged = function(state) {
+          connected = state;
+          resetUpload();
+        };
         var client = $.fm.ws.makeClient('perry', 17500, 'file-upload', {
           onError: function(error) {
             global.console.log('Connection Error: ' + error);            
-            connected = false;
+            connectedStateChanged(false);
           },
           onConnectFailed: function() {
             global.console.log('Connect failed!');            
-            connected = false;
+            connectedStateChanged(false);
           },
           onConnect: function() {
             global.console.log('Client connected.');                        
-            connected = true;
+            connectedStateChanged(true);
           },
           onDisconnect: function() {
             global.console.log('Client disconnected.');            
-            connected = false;
+            connectedStateChanged(false);
           }
         });        
         var uploadNextSlice = function(slice) {
+          var args = {};  
+
           if (slice.endOfFile) {
-            client.uploadFile(upload.fileName, upload.id, null, {
-              onSuccess: function(result) {
-                global.console.log('uploadFile-onSuccess: ' + result);
-                upload = undefined;                
-              },
-              onFailure: function(error) {
-                global.console.log('uploadFile-onFailure: ' + error.message);            
-              }            
-            });
+            if (upload.id) {
+              args.id = upload.id;
+              args.fileName = upload.fileName;              
+              args.state = 'DONE';
+              client.uploadFile(args, {
+                onSuccess: function(result) {
+                  global.console.log('uploadFile-onSuccess: ' + result);
+                  resetUpload();                
+                },
+                onFailure: function(error) {
+                  global.console.log('uploadFile-onFailure: ' + error.message);
+                  resetUpload();
+                }            
+              });
+            }
           } else {
-            client.uploadFile(upload.fileName, upload.id, slice.data, {
+            if (upload.id) {
+              args.id = upload.id;
+              args.state = 'IN_PROGRESS';
+            } else {
+              args.state = 'STARTED';
+            }
+            
+            args.fileName = upload.fileName;
+            args.data = slice.data;
+            client.uploadFile(args, {
               onSuccess: function(result) {
                 global.console.log('uploadFile-onSuccess: ' + result);
                 
                 if (result === true) {
-                  upload = undefined;
+                  resetUpload();
                 } else {
                   upload.id = result;
                   slice.next();                
                 }                
               },
               onFailure: function(error) {
-                global.console.log('uploadFile-onFailure: ' + error.message);            
+                global.console.log('uploadFile-onFailure: ' + error.message);
+                resetUpload();
               }            
             });
           }                    
-        };        
+        }; 
+        var abortUpload = function() {
+          var args = {};                  
+          
+          if (upload.id) {
+            args.id = upload.id;
+            args.fileName = upload.fileName;
+            args.state = 'ABORTED';
+            client.uploadFile(args, {
+              onSuccess: function(result) {
+                global.console.log('uploadFile-onSuccess: ' + result);                              
+                resetUpload();          
+              },
+              onFailure: function(error) {
+                global.console.log('uploadFile-onFailure: ' + error.message);
+                resetUpload();          
+              }            
+            });
+          }
+        }
         var uploadFile = function(file) {
-          upload = {id: null, fileName: file.name};
-          $.fm.files.slice(file, {size: (10 * 1024), onSlice: uploadNextSlice});
+          upload = {fileName: file.name};
+          $.fm.files.slice(file, {
+            size: (10 * 1024), 
+            onSlice: uploadNextSlice,
+            onError: abortUpload
+          });
         };
         
         client.defRequest('uploadFile');        
