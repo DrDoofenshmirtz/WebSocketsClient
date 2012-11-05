@@ -47,22 +47,10 @@
         }                        
       }
     };
-    var toByteArray = function(string) {
-      string = (string || '').toString();
-      
-      var byteArray = [],
-          length = string.length;
-      
-      for (var i = 0; i < length; ++i) {
-        byteArray.push(string.charCodeAt(i));
-      }
-      
-      return byteArray;
-    };
-    
+        
     reader.onloadend = function(event) {
       if (event.target.readyState == FileReader.DONE) {        
-        onSlice({data: toByteArray(event.target.result), next: readNextSlice});                       
+        onSlice({data: event.target.result, next: readNextSlice});                       
       }
     };
     reader.onerror = function(event) {
