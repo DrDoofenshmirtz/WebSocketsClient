@@ -119,7 +119,7 @@
         var uploadFile = function(file) {
           upload = {fileName: file.name};
           $.fm.files.slice(file, {
-            size: (10 * 1024), 
+            size: (32 * 1024), 
             onSlice: uploadNextSlice,
             onError: abortUpload
           });
