@@ -32,7 +32,7 @@
           connected = state;
           resetUpload();
         };
-        var client = $.fm.ws.makeClient('perry', 17500, 'file-upload', {
+        var client = $.fm.ws.makeClient('localhost', 17500, 'file-upload', {
           onError: function(error) {
             global.console.log('Connection Error: ' + error);            
             connectedStateChanged(false);
