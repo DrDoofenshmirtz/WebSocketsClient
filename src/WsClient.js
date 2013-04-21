@@ -52,8 +52,12 @@
     };
     
     var disposeResponseHandlers = function(responseHandlers) {
-      for each (var handler in responseHandlers) {
-        if (handler.dispose) {
+      var handler;
+      
+      for (var entry in Iterator(responseHandlers)) {
+        handler = entry[1];
+        
+        if (handler && handler.dispose) {
           try { 
             handler.dispose(); 
           } catch (ignored) {}                    
