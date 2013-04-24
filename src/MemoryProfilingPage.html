@@ -12,7 +12,7 @@
       (function(global, $) {
         var data = [],
             client = $.fm.ws.makeClient(
-              'perry', 17500, 'memory-profiling-service', {
+              'localhost', 17500, 'memory-profiling', {
               onError: function(error) {
                 global.console.log('Connection Error: ' + error);            
               },
