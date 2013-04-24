@@ -10,7 +10,7 @@
   <body>
     <script>
       (function(global, $) {
-        var client = $.fm.ws.makeClient('perry', 17500, 'ws-server', {
+        var client = $.fm.ws.makeClient('localhost', 17500, 'counter', {
           onError: function(error) {
             global.console.log('Connection Error: ' + error);            
           },
