@@ -66,7 +66,7 @@
             }
           } else {
             if (upload.id) {
-              client.uploadFile("write", upload.id, upload.fileName, {
+              client.uploadFile("write", upload.id, slice.data, {
                 onSuccess: function(result) {
                   global.console.log('uploadFile-onSuccess: ' + result);
                   slice.next();                                  
@@ -77,7 +77,7 @@
                 }            
               });
             } else {
-              client.uploadFile("open", upload.fileName, {
+              client.uploadFile("open", upload.fileName, slice.data, {
                 onSuccess: function(channelId) {
                   global.console.log('uploadFile-onSuccess: ' + channelId);
                   upload.id = channelId;
