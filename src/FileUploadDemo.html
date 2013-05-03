@@ -51,14 +51,9 @@
           }
         });        
         var uploadNextSlice = function(slice) {
-          var args = {};  
-
           if (slice.endOfFile) {
             if (upload.id) {
-              args.id = upload.id;
-              args.fileName = upload.fileName;              
-              args.state = 'DONE';
-              client.uploadFile(args, {
+              client.uploadFile("close", upload.id, {
                 onSuccess: function(result) {
                   global.console.log('uploadFile-onSuccess: ' + result);
                   resetUpload();                
@@ -71,40 +66,34 @@
             }
           } else {
             if (upload.id) {
-              args.id = upload.id;
-              args.state = 'IN_PROGRESS';
-            } else {
-              args.state = 'STARTED';
-            }
-            
-            args.fileName = upload.fileName;
-            args.data = slice.data;
-            client.uploadFile(args, {
-              onSuccess: function(result) {
-                global.console.log('uploadFile-onSuccess: ' + result);
-                
-                if (result === true) {
+              client.uploadFile("write", upload.id, upload.fileName, {
+                onSuccess: function(result) {
+                  global.console.log('uploadFile-onSuccess: ' + result);
+                  slice.next();                                  
+                },
+                onFailure: function(error) {
+                  global.console.log('uploadFile-onFailure: ' + error.message);
                   resetUpload();
-                } else {
-                  upload.id = result;
-                  slice.next();                
-                }                
-              },
-              onFailure: function(error) {
-                global.console.log('uploadFile-onFailure: ' + error.message);
-                resetUpload();
-              }            
-            });
+                }            
+              });
+            } else {
+              client.uploadFile("open", upload.fileName, {
+                onSuccess: function(channelId) {
+                  global.console.log('uploadFile-onSuccess: ' + channelId);
+                  upload.id = channelId;
+                  slice.next();                                
+                },
+                onFailure: function(error) {
+                  global.console.log('uploadFile-onFailure: ' + error.message);
+                  resetUpload();
+                }            
+              });  
+            }            
           }                    
         }; 
         var abortUpload = function() {
-          var args = {};                  
-          
-          if (upload.id) {
-            args.id = upload.id;
-            args.fileName = upload.fileName;
-            args.state = 'ABORTED';
-            client.uploadFile(args, {
+          if (upload.id) {            
+            client.uploadFile("abort", upload.id, {
               onSuccess: function(result) {
                 global.console.log('uploadFile-onSuccess: ' + result);                              
                 resetUpload();          
