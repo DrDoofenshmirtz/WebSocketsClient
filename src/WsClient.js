@@ -35,10 +35,10 @@
           }        
         });
         
-    var Receiver = function(receiver) {
-      this.receive = function() {
+    var Slot = function(signalHandler) {
+      this.onSignal = function() {
         if (!closed) {
-          receiver.apply(client, arguments);
+          signalHandler.apply(client, arguments);
         }
       };
     };
@@ -104,10 +104,10 @@
     };
     
     var handleNotification = function(notification) {
-      var receiver = client[notification.method];
+      var target = client[notification.method];
       
-      if (receiver instanceof Receiver) {
-        receiver.receive(notification.params);
+      if (target instanceof Slot) {
+        target.onSignal(notification.params);
       }            
     };
     
@@ -164,11 +164,15 @@
     
     var validateSlotName = function(name) {
       name = (name || '').toString();
-      
+            
       if (name.length < 1) {
-        $.fm.core.raise('ArgumentError', 'Invalid request name!');
+        $.fm.core.raise('ArgumentError', 'Invalid name!');
       }
       
+      if (name === 'connectionAcknowledged') {
+        $.fm.core.raise('ArgumentError', 'Reserved name!');
+      }
+            
       return name;
     };
     
@@ -209,7 +213,7 @@
       };      
     };
     
-    client.defNotification = function(name) {
+    client.defSignal = function(name) {
       this[validateSlotName(name)] = function() {
         ensureIsConnected();
         
@@ -221,21 +225,15 @@
       };     
     };
     
-    client.defReceiver = function(name, receiver) {      
-      if (!receiver) {
-        $.fm.core.raise('ArgumentError', 'Missing receiver!');
+    client.defSlot = function(name, signalHandler) {      
+      if (!signalHandler) {
+        $.fm.core.raise('ArgumentError', 'Missing signal handler!');
       }
       
-      name = validateSlotName(name);
-      
-      if (name === 'connectionAcknowledged') {
-        $.fm.core.raise('ArgumentError', 'Illegal name for receiver slot!');
-      }
-      
-      this[name] = new Receiver(receiver);  
+      this[validateSlotName(name)] = new Slot(signalHandler);  
     };
     
-    client.connectionAcknowledged = new Receiver(function(id) {
+    client.connectionAcknowledged = new Slot(function(id) {
       connectionId = id;
       connectionHandler.onConnect();
     });
@@ -245,3 +243,4 @@
   
   $.fm.core.ns('fm.ws').makeClient = makeClient;
 })(this, (this.jQuery || this));
+
