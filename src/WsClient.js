@@ -193,9 +193,9 @@
         return nextId;
       };
     })();
-        
-    client.defRequest = function(name) {
-      this[validateSlotName(name)] = function() {
+
+    var makeRequest = function(name) {
+      return function() {
         ensureIsConnected();
         
         var args = Array.prototype.slice.call(arguments),
@@ -210,7 +210,11 @@
         requestData = JSON.stringify(requestData);
         responseHandlers[requestId] = responseHandler;
         connection.send(requestData);        
-      };      
+      };  
+    };
+        
+    client.defRequest = function(name) {
+      this[validateSlotName(name)] = makeRequest(name);      
     };
     
     client.defSignal = function(name) {
@@ -231,6 +235,18 @@
       }
       
       this[validateSlotName(name)] = new Slot(signalHandler);  
+    };
+    
+    var makeChannel = function(name) {
+      var channelRequest = makeRequest(name);
+      
+      return {};
+    };
+    
+    client.defChannel = function(name) {
+      this[validateSlotName(name)] = function() {
+        return makeChannel(name);
+      };  
     };
     
     client.connectionAcknowledged = new Slot(function(id) {
