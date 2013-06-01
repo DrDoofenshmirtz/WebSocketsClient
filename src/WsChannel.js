@@ -32,23 +32,23 @@
     };
     
     channel.open = function() {
-      var argsAndRequestHandler,
+      var argsAndResponseHandler,
           args,
-          requestHandler;
+          responseHandler;
       
       ensureChannelIsClosed();
-      argsAndRequestHandler = dissectArguments(arguments);
-      args = argsAndRequestHandler[0];
-      requestHandler = argsAndRequestHandler[1];
+      argsAndResponseHandler = dissectArguments(arguments);
+      args = argsAndResponseHandler[0];
+      responseHandler = argsAndResponseHandler[1];
       args.unshift('open');
       args.push({
         onSuccess: function(result) {
           channelId = result;
-          requestHandler.onSuccess(true);
+          responseHandler.onSuccess(true);
         },
         onFailure: function(error) {
           closed = true;
-          requestHandler.onFailure(error);  
+          responseHandler.onFailure(error);  
         }  
       });
       closed = false;
@@ -56,85 +56,89 @@
     };
     
     channel.read = function() {
-      var argsAndRequestHandler,
+      var argsAndResponseHandler,
           args,
-          requestHandler;
+          responseHandler;
             
       ensureChannelIsOpen();
-      argsAndRequestHandler = dissectArguments(arguments);
-      args = argsAndRequestHandler[0];
-      requestHandler = argsAndRequestHandler[1];
+      argsAndResponseHandler = dissectArguments(arguments);
+      args = argsAndResponseHandler[0];
+      responseHandler = argsAndResponseHandler[1];
       args.unshift(channelId);
       args.unshift('read');
       args.push({
-        onSuccess: function(result) { requestHandler.onSuccess(result); },
-        onFailure: function(error) { requestHandler.onFailure(error); }  
+        onSuccess: function(result) { responseHandler.onSuccess(result); },
+        onFailure: function(error) { responseHandler.onFailure(error); }  
       });
       request.apply(this, args);
     };
     
     channel.write = function() {
-      var argsAndRequestHandler,
+      var argsAndResponseHandler,
           args,
-          requestHandler;
+          responseHandler;
             
       ensureChannelIsOpen();
-      argsAndRequestHandler = dissectArguments(arguments);
-      args = argsAndRequestHandler[0];
-      requestHandler = argsAndRequestHandler[1];
+      argsAndResponseHandler = dissectArguments(arguments);
+      args = argsAndResponseHandler[0];
+      responseHandler = argsAndResponseHandler[1];
       args.unshift(channelId);
       args.unshift('write');
       args.push({
-        onSuccess: function(result) { requestHandler.onSuccess(result); },
-        onFailure: function(error) { requestHandler.onFailure(error); }  
+        onSuccess: function(result) { responseHandler.onSuccess(result); },
+        onFailure: function(error) { responseHandler.onFailure(error); }  
       });
       request.apply(this, args);
     };
     
     channel.abort = function() {
-      var argsAndRequestHandler,
+      var argsAndResponseHandler,
           args,
-          requestHandler;
+          responseHandler;
             
       if (!isOpen()) {
-        return;
+        return false;
       }
             
-      argsAndRequestHandler = dissectArguments(arguments);
-      args = argsAndRequestHandler[0];
-      requestHandler = argsAndRequestHandler[1];
+      argsAndResponseHandler = dissectArguments(arguments);
+      args = argsAndResponseHandler[0];
+      responseHandler = argsAndResponseHandler[1];
       args.unshift(channelId);
       args.unshift('abort');
       args.push({
-        onSuccess: function(result) { requestHandler.onSuccess(result); },
-        onFailure: function(error) { requestHandler.onFailure(error); }  
-      });
-      closed = true;
-      channelId = undefined;
-      request.apply(this, args);      
-    };
-    
-    channel.close = function() {
-      var argsAndRequestHandler,
-          args,
-          requestHandler;
-            
-      if (!isOpen()) {
-        return;
-      }
-            
-      argsAndRequestHandler = dissectArguments(arguments);
-      args = argsAndRequestHandler[0];
-      requestHandler = argsAndRequestHandler[1];
-      args.unshift(channelId);
-      args.unshift('close');
-      args.push({
-        onSuccess: function(result) { requestHandler.onSuccess(result); },
-        onFailure: function(error) { requestHandler.onFailure(error); }  
+        onSuccess: function(result) { responseHandler.onSuccess(result); },
+        onFailure: function(error) { responseHandler.onFailure(error); }  
       });
       closed = true;
       channelId = undefined;
       request.apply(this, args);
+
+      return true;      
+    };
+    
+    channel.close = function() {
+      var argsAndResponseHandler,
+          args,
+          responseHandler;
+            
+      if (!isOpen()) {
+        return false;
+      }
+            
+      argsAndResponseHandler = dissectArguments(arguments);
+      args = argsAndResponseHandler[0];
+      responseHandler = argsAndResponseHandler[1];
+      args.unshift(channelId);
+      args.unshift('close');
+      args.push({
+        onSuccess: function(result) { responseHandler.onSuccess(result); },
+        onFailure: function(error) { responseHandler.onFailure(error); }  
+      });
+      closed = true;
+      channelId = undefined;
+      request.apply(this, args);
+      
+      return true;
     };
     
     return channel;
