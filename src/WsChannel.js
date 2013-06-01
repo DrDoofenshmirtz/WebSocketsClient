@@ -55,17 +55,16 @@
       request.apply(this, args);
     };
     
-    channel.read = function() {
+    var transmitData = function(operation, args) {
       var argsAndResponseHandler,
-          args,
           responseHandler;
             
       ensureChannelIsOpen();
-      argsAndResponseHandler = dissectArguments(arguments);
+      argsAndResponseHandler = dissectArguments(args);
       args = argsAndResponseHandler[0];
       responseHandler = argsAndResponseHandler[1];
       args.unshift(channelId);
-      args.unshift('read');
+      args.unshift(operation);
       args.push({
         onSuccess: function(result) { responseHandler.onSuccess(result); },
         onFailure: function(error) { responseHandler.onFailure(error); }  
@@ -73,22 +72,12 @@
       request.apply(this, args);
     };
     
+    channel.read = function() {
+      transmitData('read', arguments);
+    };
+    
     channel.write = function() {
-      var argsAndResponseHandler,
-          args,
-          responseHandler;
-            
-      ensureChannelIsOpen();
-      argsAndResponseHandler = dissectArguments(arguments);
-      args = argsAndResponseHandler[0];
-      responseHandler = argsAndResponseHandler[1];
-      args.unshift(channelId);
-      args.unshift('write');
-      args.push({
-        onSuccess: function(result) { responseHandler.onSuccess(result); },
-        onFailure: function(error) { responseHandler.onFailure(error); }  
-      });
-      request.apply(this, args);
+      transmitData('write', arguments);
     };
     
     channel.abort = function() {
