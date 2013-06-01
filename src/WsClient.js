@@ -237,15 +237,9 @@
       this[validateSlotName(name)] = new Slot(signalHandler);  
     };
     
-    var makeChannel = function(name) {
-      var channelRequest = makeRequest(name);
-      
-      return {};
-    };
-    
     client.defChannel = function(name) {
       this[validateSlotName(name)] = function() {
-        return makeChannel(name);
+        return $.fm.ws.makeChannel(makeRequest(name));
       };  
     };
     
