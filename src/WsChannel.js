@@ -126,8 +126,8 @@
       argsAndRequestHandler = dissectArguments(arguments);
       args = argsAndRequestHandler[0];
       requestHandler = argsAndRequestHandler[1];
-      args.shift(channelId);
-      args.shift('close');
+      args.unshift(channelId);
+      args.unshift('close');
       args.push({
         onSuccess: function(result) { requestHandler.onSuccess(result); },
         onFailure: function(error) { requestHandler.onFailure(error); }  
