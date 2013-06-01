@@ -5,8 +5,9 @@
     <h1>File Upload Demo 04.05.2013</h1>
     <script src='FmCore.js'></script>
     <script src='FmFiles.js'></script>
-    <script src='WsConnection.js'></script>   
-    <script src='WsClient.js'></script>
+    <script src='WsConnection.js'></script>
+    <script src='WsChannel.js'></script>
+    <script src='WsClient.js'></script>    
   </head>
   <body>
     <div>
@@ -22,10 +23,12 @@
     </div>
     <script>
       (function(global, $) {
-        var upload,
-            connected;
+        var connected,
+            fileName,
+            upload;
                 
         var resetUpload = function() {
+          fileName = undefined;
           upload = undefined;
         };
         var connectedStateChanged = function(state) {
@@ -52,8 +55,8 @@
         });        
         var uploadNextSlice = function(slice) {
           if (slice.endOfFile) {
-            if (upload.id) {
-              client.uploadFile("close", upload.id, {
+            if (upload) {
+              upload.close({
                 onSuccess: function(result) {
                   global.console.log('uploadFile-onSuccess: ' + result);
                   resetUpload();                
@@ -65,8 +68,8 @@
               });
             }
           } else {
-            if (upload.id) {
-              client.uploadFile("write", upload.id, slice.data, {
+            if (upload) {
+              upload.write(slice.data, {
                 onSuccess: function(result) {
                   global.console.log('uploadFile-onSuccess: ' + result);
                   slice.next();                                  
@@ -77,10 +80,10 @@
                 }            
               });
             } else {
-              client.uploadFile("open", upload.fileName, slice.data, {
-                onSuccess: function(channelId) {
-                  global.console.log('uploadFile-onSuccess: ' + channelId);
-                  upload.id = channelId;
+              upload = client.uploadFile();
+              upload.open(fileName, slice.data, {
+                onSuccess: function(result) {
+                  global.console.log('uploadFile-onSuccess: ' + result);
                   slice.next();                                
                 },
                 onFailure: function(error) {
@@ -92,8 +95,8 @@
           }                    
         }; 
         var abortUpload = function() {
-          if (upload.id) {            
-            client.uploadFile("abort", upload.id, {
+          if (upload) {            
+            upload.abort({
               onSuccess: function(result) {
                 global.console.log('uploadFile-onSuccess: ' + result);                              
                 resetUpload();          
@@ -106,7 +109,7 @@
           }
         }
         var uploadFile = function(file) {
-          upload = {fileName: file.name};
+          fileName = file.name;
           $.fm.files.slice(file, {
             size: (128 * 1024), 
             onSlice: uploadNextSlice,
@@ -114,7 +117,7 @@
           });
         };
         
-        client.defRequest('uploadFile');        
+        client.defChannel('uploadFile');                
         global.onload = function() {
           global.document
             .getElementById('uploadButton')
