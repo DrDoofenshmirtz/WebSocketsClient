@@ -79,21 +79,20 @@
     channel.write = function() {
       transmitData('write', arguments);
     };
-    
-    channel.abort = function() {
+
+    var closeChannel = function(operation, args) {
       var argsAndResponseHandler,
-          args,
           responseHandler;
             
       if (!isOpen()) {
         return false;
       }
             
-      argsAndResponseHandler = dissectArguments(arguments);
+      argsAndResponseHandler = dissectArguments(args);
       args = argsAndResponseHandler[0];
       responseHandler = argsAndResponseHandler[1];
       args.unshift(channelId);
-      args.unshift('abort');
+      args.unshift(operation);
       args.push({
         onSuccess: function(result) { responseHandler.onSuccess(result); },
         onFailure: function(error) { responseHandler.onFailure(error); }  
@@ -102,32 +101,15 @@
       channelId = undefined;
       request.apply(this, args);
 
-      return true;      
+      return true;
+    };
+    
+    channel.abort = function() {
+      return closeChannel('abort', arguments);      
     };
     
     channel.close = function() {
-      var argsAndResponseHandler,
-          args,
-          responseHandler;
-            
-      if (!isOpen()) {
-        return false;
-      }
-            
-      argsAndResponseHandler = dissectArguments(arguments);
-      args = argsAndResponseHandler[0];
-      responseHandler = argsAndResponseHandler[1];
-      args.unshift(channelId);
-      args.unshift('close');
-      args.push({
-        onSuccess: function(result) { responseHandler.onSuccess(result); },
-        onFailure: function(error) { responseHandler.onFailure(error); }  
-      });
-      closed = true;
-      channelId = undefined;
-      request.apply(this, args);
-      
-      return true;
+      return closeChannel('close', arguments);
     };
     
     return channel;
