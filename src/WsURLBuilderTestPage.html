@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>  
+  <head>
+    <meta charset=utf-8>
+    <h1>WsURLBuilder Test Page</h1>
+    <script src='FmCore.js'></script>   
+    <script src='WsURLBuilder.js'></script>   
+  </head>
+  <body>
+    <script>
+      (function(global, $) {
+        var url;
+
+        url = $.fm.ws.buildURL();
+        global.console.log(url);
+
+        url = $.fm.ws.buildURL('ws://a-url-string');
+        global.console.log(url);
+        
+        url = $.fm.ws.buildURL({host: 'perry'});
+        global.console.log(url);
+
+        url = $.fm.ws.buildURL({host: 'perry', 
+                                port: 17500, 
+                                serviceName: 'test',
+                                args: {arg1: 1, arg2: 2}});
+        global.console.log(url);        
+      })(this, (this.jQuery || this));
+    </script>   
+  </body>
+</html>
+
