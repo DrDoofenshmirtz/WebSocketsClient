@@ -50,20 +50,31 @@
   };
   
   $.fm.core.ns('fm.ws').buildURL = function(spec) {
+    var wsProtocolPrefix = 'ws://';    
     
-    // If the spec is a non-empty string, it'll be taken as the WebSocket url.
+    // If the spec is a string, it'll be taken as the WebSocket url.
     if ((typeof spec === 'string') || (spec instanceof String)) {
-      if (spec.length <= 0) {
+      
+      // Reject empty urls.
+      if (spec.length <= 0) {        
         $.fm.core.raise('ArgumentError', 'Empty service url!');  
       }
       
+      // Check the url for the right protocol-prefix, reject if invalid.
+      if (!spec.startsWith(wsProtocolPrefix)) {
+        $.fm.core.raise('ArgumentError', 
+                        'Invalid protocol prefix for service url!');  
+      }
+            
       return spec;
     }
     
     // Use an empty object as default if the given spec is falsy.
     spec = (spec || {});
     
-    return 'ws://' + buildServiceURL(spec) + buildQueryString(spec.args);                 
+    return wsProtocolPrefix + 
+           buildServiceURL(spec) + 
+           buildQueryString(spec.args);                 
   };
 })(this, (this.jQuery || this));
 
