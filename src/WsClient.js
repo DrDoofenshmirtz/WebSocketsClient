@@ -1,10 +1,10 @@
 (function(global, $) {
-  var makeClient = function(host, port, serviceName, connectionHandler) {
+  var makeClient = function(connectionSpec, connectionHandler) {
     var client = {},
         responseHandlers = {},
         closed = true,
         connectionId,
-        connection = $.fm.ws.makeConnection(host, port, serviceName, {
+        connection = $.fm.ws.makeConnection(connectionSpec, {
           onError: function(error) {
             if (!closed) {
               handleError(error);

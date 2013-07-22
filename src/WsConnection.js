@@ -77,15 +77,21 @@
     return {produce: produce, destroy: destroy};
   };
     
-  var makeConnection = function(host, port, serviceName, eventHandler) {
-    var socketProducer,
-        messages = [],
+  var makeConnection = function(spec, eventHandler) {
+    var url,
+        socketProducer,
+        messages,
         sendTaskId,
         webSocket;
         
+    if (!eventHandler) {
+      $.fm.core.raise('ArgumentError', 'Invalid event handler!');
+    }
+    
+    url = $.fm.ws.buildURL(spec);    
+    messages = [];     
+        
     var open = function() {
-      var url = 'ws://' + host + ':' + port + '/' + serviceName;
-      
       if (!socketProducer) {
         socketProducer = makeSocketProducer(url, 2000, {
           onReady: function(socket) {
@@ -181,3 +187,4 @@
   
   $.fm.core.ns('fm.ws').makeConnection = makeConnection;
 })(this, (this.jQuery || this));
+
