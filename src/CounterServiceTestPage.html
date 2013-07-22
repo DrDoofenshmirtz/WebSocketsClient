@@ -11,44 +11,45 @@
   <body>
     <script>
       (function(global, $) {
-        var client = $.fm.ws.makeClient('localhost', 17500, 'counter', {
-          onError: function(error) {
-            global.console.log('Connection Error: ' + error);            
-          },
-          onConnectFailed: function() {
-            global.console.log('Connect failed!');            
-          },
-          onConnect: function() {
-            global.console.log('Client connected.');            
-            client.incCounter(42, {
-              onSuccess: function(result) {
-                global.console.log('onSuccess: ' + result);            
+        var connectionSpec = {port: 17500, serviceName: 'counter'},
+            client = $.fm.ws.makeClient(connectionSpec, {
+              onError: function(error) {
+                global.console.log('Connection Error: ' + error);            
               },
-              onFailure: function(error) {
-                global.console.log('onFailure: ' + error.message);            
-              }            
-            });
-            client.incCounter(42, {
-              onSuccess: function(result) {
-                global.console.log('onSuccess: ' + result);            
+              onConnectFailed: function() {
+                global.console.log('Connect failed!');            
               },
-              onFailure: function(error) {
-                global.console.log('onFailure: ' + error.message);            
-              }            
-            });
-            client.resetCounter(0, {
-              onSuccess: function(result) {
-                global.console.log('onSuccess: ' + result);            
+              onConnect: function() {
+                global.console.log('Client connected.');            
+                client.incCounter(42, {
+                  onSuccess: function(result) {
+                    global.console.log('onSuccess: ' + result);            
+                  },
+                  onFailure: function(error) {
+                    global.console.log('onFailure: ' + error.message);            
+                  }            
+                });
+                client.incCounter(42, {
+                  onSuccess: function(result) {
+                    global.console.log('onSuccess: ' + result);            
+                  },
+                  onFailure: function(error) {
+                    global.console.log('onFailure: ' + error.message);            
+                  }            
+                });
+                client.resetCounter(0, {
+                  onSuccess: function(result) {
+                    global.console.log('onSuccess: ' + result);            
+                  },
+                  onFailure: function(error) {
+                    global.console.log('onFailure: ' + error.message);            
+                  }            
+                });
               },
-              onFailure: function(error) {
-                global.console.log('onFailure: ' + error.message);            
-              }            
+              onDisconnect: function() {
+                global.console.log('Client disconnected.');            
+              }
             });
-          },
-          onDisconnect: function() {
-            global.console.log('Client disconnected.');            
-          }
-        });
         
         client.defRequest('incCounter');
         client.defRequest('resetCounter');        

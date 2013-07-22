@@ -12,8 +12,8 @@
     <script>
       (function(global, $) {
         var data = [],
-            client = $.fm.ws.makeClient(
-              'localhost', 17500, 'memory-profiling', {
+            connectionSpec = {port: 17500, serviceName: 'memory-profiling'},
+            client = $.fm.ws.makeClient(connectionSpec, {
               onError: function(error) {
                 global.console.log('Connection Error: ' + error);            
               },

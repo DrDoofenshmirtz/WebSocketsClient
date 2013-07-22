@@ -11,36 +11,37 @@
   <body>
     <script>
       (function(global, $) {
-        var client = $.fm.ws.makeClient('perry', 17500, 'ws-server', {
-          onError: function(error) {
-            global.console.log('Connection Error: ' + error);            
-          },
-          onConnectFailed: function() {
-            global.console.log('Connect failed!');            
-          },
-          onConnect: function() {
-            global.console.log('Client connected.');            
-            client.wsSuccess(42, {
-              onSuccess: function(result) {
-                global.console.log('onSuccess: ' + result);            
+        var connectionSpec = {port: 17500, serviceName: 'ws-server'},
+            client = $.fm.ws.makeClient(connectionSpec, {
+              onError: function(error) {
+                global.console.log('Connection Error: ' + error);            
               },
-              onFailure: function(error) {
-                global.console.log('onFailure: ' + error.message);            
-              }            
-            });
-            client.wsError(42, {
-              onSuccess: function(result) {
-                global.console.log('onSuccess: ' + result);            
+              onConnectFailed: function() {
+                global.console.log('Connect failed!');            
               },
-              onFailure: function(error) {
-                global.console.log('onFailure: ' + error.message);            
-              }            
+              onConnect: function() {
+                global.console.log('Client connected.');            
+                client.wsSuccess(42, {
+                  onSuccess: function(result) {
+                    global.console.log('onSuccess: ' + result);            
+                  },
+                  onFailure: function(error) {
+                    global.console.log('onFailure: ' + error.message);            
+                  }            
+                });
+                client.wsError(42, {
+                  onSuccess: function(result) {
+                    global.console.log('onSuccess: ' + result);            
+                  },
+                  onFailure: function(error) {
+                    global.console.log('onFailure: ' + error.message);            
+                  }            
+                });
+              },
+              onDisconnect: function() {
+                global.console.log('Client disconnected.');            
+              }
             });
-          },
-          onDisconnect: function() {
-            global.console.log('Client disconnected.');            
-          }
-        });
         
         client.defRequest('wsSuccess');
         client.defRequest('wsError');        
@@ -52,3 +53,4 @@
     </script>   
   </body>
 </html>
+

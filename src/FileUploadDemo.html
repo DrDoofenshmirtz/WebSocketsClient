@@ -36,24 +36,25 @@
           connected = state;
           resetUpload();
         };
-        var client = $.fm.ws.makeClient('localhost', 17500, 'file-upload', {
-          onError: function(error) {
-            global.console.log('Connection Error: ' + error);            
-            connectedStateChanged(false);
-          },
-          onConnectFailed: function() {
-            global.console.log('Connect failed!');            
-            connectedStateChanged(false);
-          },
-          onConnect: function() {
-            global.console.log('Client connected.');                        
-            connectedStateChanged(true);
-          },
-          onDisconnect: function() {
-            global.console.log('Client disconnected.');            
-            connectedStateChanged(false);
-          }
-        });        
+        var connectionSpec = {port: 17500, serviceName: 'file-upload'},
+            client = $.fm.ws.makeClient(connectionSpec, {
+              onError: function(error) {
+                global.console.log('Connection Error: ' + error);            
+                connectedStateChanged(false);
+              },
+              onConnectFailed: function() {
+                global.console.log('Connect failed!');            
+                connectedStateChanged(false);
+              },
+              onConnect: function() {
+                global.console.log('Client connected.');                        
+                connectedStateChanged(true);
+              },
+              onDisconnect: function() {
+                global.console.log('Client disconnected.');            
+                connectedStateChanged(false);
+              }
+            });        
         var uploadNextSlice = function(slice) {
           if (slice.endOfFile) {
             if (upload) {

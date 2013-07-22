@@ -15,8 +15,9 @@
                                          params: [{magicNumber: 42}]}),
             rpcError = JSON.stringify({id: 2, 
                                        method: 'wsError', 
-                                       params: [{magicNumber: 42}]}),                 
-            connection = $.fm.ws.makeConnection('perry', 17500, 'ws-server', {
+                                       params: [{magicNumber: 42}]}),
+            connectionSpec = {port: 17500, serviceName: 'ws-server'},                           
+            connection = $.fm.ws.makeConnection(connectionSpec, {
               onError: function(error) {
                 global.console.log('onError: ' + error);
               },
@@ -44,3 +45,4 @@
     </script>   
   </body>
 </html>
+
