@@ -57,13 +57,13 @@
       
       // Reject empty urls.
       if (spec.length <= 0) {        
-        $.fm.core.raise('ArgumentError', 'Empty service url!');  
+        $.fm.core.raise('ArgumentError', 'Empty WebSocket url!');  
       }
       
       // Check the url for the right protocol-prefix, reject if invalid.
       if (!spec.startsWith(wsProtocolPrefix)) {
         $.fm.core.raise('ArgumentError', 
-                        'Invalid protocol prefix for service url!');  
+                        'Invalid protocol prefix for WebSocket url!');  
       }
             
       return spec;
