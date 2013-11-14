@@ -1,6 +1,7 @@
 (function(global, $) {
   var makeClient = function(connectionSpec, connectionHandler) {
-    var client = {},
+    var client = {path: ''},
+        slots = {},
         responseHandlers = {},
         closed = true,
         connectionId,
@@ -104,7 +105,7 @@
     };
     
     var handleNotification = function(notification) {
-      var target = client[notification.method];
+      var target = slots[notification.method];
       
       if (target instanceof Slot) {
         target.onSignal(notification.params);
@@ -214,11 +215,13 @@
     };
         
     client.defRequest = function(name) {
-      this[validateSlotName(name)] = makeRequest(name);      
+      name = this.path + '.' + validateSlotName(name);
+      this[name] = makeRequest(name);      
     };
     
     client.defSignal = function(name) {
-      this[validateSlotName(name)] = function() {
+      name = this.path + '.' + validateSlotName(name);
+      this[name] = function() {
         ensureIsConnected();
         
         var args = Array.prototype.slice.call(arguments),
@@ -234,16 +237,31 @@
         $.fm.core.raise('ArgumentError', 'Missing signal handler!');
       }
       
-      this[validateSlotName(name)] = new Slot(signalHandler);  
+      name = this.path + '.' + validateSlotName(name);
+      slots[name] = new Slot(signalHandler);  
     };
     
     client.defChannel = function(name) {
-      this[validateSlotName(name)] = function() {
+      name = this.path + '.' + validateSlotName(name);
+      this[name] = function() {
         return $.fm.ws.makeChannel(makeRequest(name));
       };  
     };
     
-    client.connectionAcknowledged = new Slot(function(id) {
+    client.defNamespace = function(name) {
+      var namespace = $.fm.core.ns(name, this); 
+      
+      namespace.path = this.path + '.' + name;
+      namespace.defRequest = this.defRequest;
+      namespace.defSignal = this.defSignal;
+      namespace.defSlot = this.defSlot;
+      namespace.defChannel = this.defChannel;
+      namespace.defNamespace = this.defNamespace;
+      
+      return namespace;
+    };
+    
+    slots.connectionAcknowledged = new Slot(function(id) {
       connectionId = id;
       connectionHandler.onConnect();
     });
