@@ -213,19 +213,26 @@
         connection.send(requestData);        
       };  
     };
+    
+    var makePath = function(path, name) {
+      return ((path && (path + '.')) + name); 
+    };
         
     client.defRequest = function(name) {
-      name = this.path + '.' + validateSlotName(name);
-      this[name] = makeRequest(name);      
+      name = validateSlotName(name);
+      this[name] = makeRequest(makePath(this.path, name));      
     };
     
     client.defSignal = function(name) {
-      name = this.path + '.' + validateSlotName(name);
+      var path;
+      
+      name = validateSlotName(name);
+      path = makePath(this.path, name);
       this[name] = function() {
         ensureIsConnected();
         
         var args = Array.prototype.slice.call(arguments),
-            requestData = {id: null, method: name, params: args};
+            requestData = {id: null, method: path, params: args};
             
         requestData = JSON.stringify(requestData);        
         connection.send(requestData);        
@@ -237,21 +244,22 @@
         $.fm.core.raise('ArgumentError', 'Missing signal handler!');
       }
       
-      name = this.path + '.' + validateSlotName(name);
+      name = validateSlotName(name);
+      name = makePath(this.path, name);
       slots[name] = new Slot(signalHandler);  
     };
     
     client.defChannel = function(name) {
-      name = this.path + '.' + validateSlotName(name);
+      name = validateSlotName(name);
       this[name] = function() {
-        return $.fm.ws.makeChannel(makeRequest(name));
+        return $.fm.ws.makeChannel(makeRequest(makePath(this.path, name)));
       };  
     };
     
     client.defNamespace = function(name) {
       var namespace = $.fm.core.ns(name, this); 
       
-      namespace.path = this.path + '.' + name;
+      namespace.path = makePath(this.path, name);
       namespace.defRequest = this.defRequest;
       namespace.defSignal = this.defSignal;
       namespace.defSlot = this.defSlot;
