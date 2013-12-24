@@ -15,7 +15,7 @@
     
     var onSlice = (options.onSlice || defaultOnSlice),
         onError = (options.onError || defaultOnError),
-        fileSize, size, reader, position;
+        fileSize, size, sliceCount, reader, position;
 
     try {
       fileSize = file.size;
@@ -25,10 +25,11 @@
       return;
     }
     
-    size = (options.size || fileSize),        
-    reader = new FileReader(),
+    size = (options.size || fileSize);
+    sliceCount = Math.ceil(fileSize / size);
+    reader = new FileReader();
     position = 0;
-                    
+    
     var readNextSlice = function() {
       var start = position;
       
@@ -49,8 +50,13 @@
     };
         
     reader.onloadend = function(event) {
-      if (event.target.readyState == FileReader.DONE) {        
-        onSlice({data: event.target.result, next: readNextSlice});                       
+      var slice;
+      
+      if (event.target.readyState == FileReader.DONE) {
+        slice = {data: event.target.result, 
+                 next: readNextSlice
+                 sliceCount: sliceCount};
+        onSlice(slice);                       
       }
     };
     reader.onerror = function(event) {
@@ -78,6 +84,20 @@
       onError($.fm.core.makeError('FileReadError', errorMessage));      
     };    
     readNextSlice();
+    
+    return (function() {
+      var ignoreEvent = function() {},
+          aborted = false;
+          
+      return function() {
+        if (!aborted) {
+          aborted = true;
+          onSlice = ignoreEvent;
+          onError = ignoreEvent;
+          reader.abort();
+        }
+      };  
+    })();
   };
   
   $.fm.core.ns('fm.files').slice = slice;
