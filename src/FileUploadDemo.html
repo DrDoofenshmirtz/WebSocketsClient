@@ -2,25 +2,27 @@
 <html>  
   <head>
     <meta charset=utf-8>
-    <h1>File Upload Demo 28.12.2013</h1>
-    <script src='FmCore.js'></script>
-    <script src='FmFiles.js'></script>
-    <script src='FileUpload.js'></script>
-    <script src='WsURLBuilder.js'></script>
-    <script src='WsConnection.js'></script>
-    <script src='WsChannel.js'></script>
-    <script src='WsClient.js'></script>    
+    <title>File Upload Demo 28.12.2013</title>
+    <link rel="stylesheet" type="text/css" href="FileUploadDemo.css">
+    <script src="FmCore.js"></script>
+    <script src="FmFiles.js"></script>
+    <script src="FileUpload.js"></script>
+    <script src="WsURLBuilder.js"></script>
+    <script src="WsConnection.js"></script>
+    <script src="WsChannel.js"></script>
+    <script src="WsClient.js"></script>    
   </head>
   <body>
-    <div>
-      <div style="display: inline">
+    <div class="contentFrame">
+      <div class="titleBar">
+        File Upload
+      </div>
+      <div>
         <span>
           Please select a file to upload:
           <input type="file" id="fileSelection" />
+          <button id="uploadButton">Upload</button>
         </span>
-      </div>
-      <div style="display: inline">
-        <button id="uploadButton">Upload</button>
       </div>
     </div>
     <script>
