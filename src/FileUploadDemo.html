@@ -69,8 +69,8 @@
             fileUpload.uploadFile(), 
             (128 * 1024), 
             {onProgress: function(sliceIndex, sliceCount) {
-               global.console.log('Uploaded slice no. ' + sliceIndex + ' of '
-                                  + sliceCount + '.');
+               global.console.log('Uploaded slice no. ' + (sliceIndex + 1) 
+                                  + ' of ' + sliceCount + '.');
              },
              onError: function(error) {
                global.console.log('Upload failed! Error: ' + error.message);
