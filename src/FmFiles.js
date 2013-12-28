@@ -54,7 +54,7 @@
       
       if (event.target.readyState == FileReader.DONE) {
         slice = {data: event.target.result, 
-                 next: readNextSlice
+                 next: readNextSlice,
                  sliceCount: sliceCount};
         onSlice(slice);                       
       }
