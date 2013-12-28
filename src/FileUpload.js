@@ -1,15 +1,20 @@
 (function(global, $) {    
-  
+  var log,
+      eventLogger,
+      defaultEventHandler,
+      completeEventHandler,
+      startUpload;
+      
   /* Prepends a namespace prefix to the given message 
    * and logs it to the console.
    */
-  var log = function(message) {
+  log = function(message) {
     global.console.log('[fm.fileupload] ' + message);
   };
  
   /* Creates a default event handler method that just logs a message.
    */
-  var eventLogger = function(message) {
+  eventLogger = function(message) {
     return function() {
       log(message);  
     };
@@ -18,7 +23,7 @@
   /* A default event handler to be used as a "no op" handler or as a template 
    * for the completion of an incomplete handler.
    */
-  var defaultEventHandler = {
+  defaultEventHandler = {
     onProgress: eventLogger('onProgress'),
     onError: eventLogger('onError'),
     onAbort: eventLogger('onAbort'),
@@ -28,7 +33,7 @@
   /* Completes the given event handler, replacing all missing methods with
    * methods from the default event handler.  
    */
-  var completeEventHandler = function(eventHandler) {
+  completeEventHandler = function(eventHandler) {
     eventHandler = (eventHandler || {});
     eventHandler.onProgress = (eventHandler.onProgress || 
                                defaultEventHandler.onProgress);
@@ -52,7 +57,7 @@
    *
    * Returns a function that can be called to abort the upload.
    */
-  var startUpload = function(file, channel, sliceSize, eventHandler) {
+  startUpload = function(file, channel, sliceSize, eventHandler) {
     var fileName,
         sliceIndex,
         uploadNextSlice,
