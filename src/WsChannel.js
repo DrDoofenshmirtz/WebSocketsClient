@@ -49,7 +49,11 @@
         onFailure: function(error) {
           closed = true;
           responseHandler.onFailure(error);  
-        }  
+        },  
+        dispose: function() {
+          closed = true;
+          responseHandler.dispose && responseHandler.dispose();
+        }
       });
       closed = false;
       request.apply(this, args);
@@ -67,7 +71,12 @@
       args.unshift(operation);
       args.push({
         onSuccess: function(result) { responseHandler.onSuccess(result); },
-        onFailure: function(error) { responseHandler.onFailure(error); }  
+        onFailure: function(error) { responseHandler.onFailure(error); },
+        dispose: function() {
+          closed = true;
+          channelId = undefined;
+          responseHandler.dispose && responseHandler.dispose(); 
+        }
       });
       request.apply(this, args);
     };
@@ -95,7 +104,10 @@
       args.unshift(operation);
       args.push({
         onSuccess: function(result) { responseHandler.onSuccess(result); },
-        onFailure: function(error) { responseHandler.onFailure(error); }  
+        onFailure: function(error) { responseHandler.onFailure(error); },
+        dispose: function() {
+          responseHandler.dispose && responseHandler.dispose(); 
+        }
       });
       closed = true;
       channelId = undefined;
