@@ -58,8 +58,8 @@
    * Returns a function that can be called to abort the upload.
    */
   startUpload = function(file, channel, sliceSize, eventHandler) {
-    var fileName,
-        sliceSent,
+    var sliceSent,
+        handleProgress,
         handleFailure,
         handleDispose,
         uploadNextSlice,
@@ -76,11 +76,17 @@
     }
         
     eventHandler = completeEventHandler(eventHandler);
-    fileName = file.name;
+    
+    handleProgress = function(slice) {
+      log('Uploaded slice no. ' + slice.index 
+          + ' of file "' + file.name + '".');
+      eventHandler.onProgress(slice.index, slice.total);
+      slice.next();
+    };
     
     handleFailure = function(error) {
-      log('Operation failed (file: ' + fileName + ', error: ' 
-          + error.message + ')!');
+      log('Operation failed (file: ' + file.name 
+          + ', error: ' + error.message + ')!');
       channel = null;
       abortSlicing();
       eventHandler.onError(error);
@@ -100,12 +106,12 @@
       }
       
       if (slice.endOfFile) {
-        log('Finishing upload of file "' + fileName + '"...');
+        log('Finishing upload of file "' + file.name + '"...');
         close = channel.close;
         channel = null;
         close({
           onSuccess: function(result) {
-            log('Upload of file "' + fileName + '" finished.');
+            log('Upload of file "' + file.name + '" finished.');
             eventHandler.onDone();
           },
           onFailure: handleFailure,
@@ -113,27 +119,18 @@
         });
       } else {
         if (!sliceSent) {
-          log('Starting upload of file "' + fileName + '"...');
+          log('Starting upload of file "' + file.name + '"...');
           sliceSent = true;
-          channel.open(fileName, slice.data, {
-            onSuccess: function(result) {
-              log('Upload of file "' + fileName + '" started.');
-              eventHandler.onProgress(slice.index, slice.total);
-              slice.next();                                
-            },
+          channel.open(file.name, slice.data, {
+            onSuccess: function(result) { handleProgress(slice); },
             onFailure: handleFailure,
             dispose: handleDispose
           });
         } else {
-          log('Uploading slice no. ' + slice.index + ' of file "' 
-              + fileName + '"...');
+          log('Uploading slice no. ' + slice.index 
+              + ' of file "' + file.name + '"...');
           channel.write(slice.data, {
-            onSuccess: function(result) {
-              log('Uploaded slice no. ' + slice.index + ' of file "' 
-                  + fileName + '".');
-              eventHandler.onProgress(slice.index, slice.total);
-              slice.next();                                
-            },
+            onSuccess: function(result) { handleProgress(slice); },
             onFailure: handleFailure,
             dispose: handleDispose
           });            
@@ -148,20 +145,20 @@
         return;
       }
       
-      log('Aborting upload of file "' + fileName + '"...');
+      log('Aborting upload of file "' + file.name + '"...');
       abort = channel.abort;
       channel = null;
       abortSlicing();
       
       if (!sliceSent) {
-        log('Upload of file "' + fileName + '" aborted.');
+        log('Upload of file "' + file.name + '" aborted.');
         
         return;
       }
             
       abort({
         onSuccess: function(result) {
-          log('Upload of file "' + fileName + '" aborted.');
+          log('Upload of file "' + file.name + '" aborted.');
           eventHandler.onAbort();
         },
         onFailure: handleFailure  
@@ -179,7 +176,7 @@
       channel = null;
       
       log('Aborting upload because slicing of file failed (file: ' + 
-          fileName + ', error: ' + error.message + ').');
+          file.name + ', error: ' + error.message + ').');
       eventHandler.onError(error);
       abort({
         onSuccess: function() {},
