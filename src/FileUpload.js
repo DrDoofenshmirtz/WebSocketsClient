@@ -60,7 +60,8 @@
   startUpload = function(file, channel, sliceSize, eventHandler) {
     var fileName,
         sliceSent,
-        onFailure,
+        handleFailure,
+        handleDispose,
         uploadNextSlice,
         abortUpload,
         failUpload,
@@ -77,12 +78,18 @@
     eventHandler = completeEventHandler(eventHandler);
     fileName = file.name;
     
-    onFailure = function(error) {
+    handleFailure = function(error) {
       log('Operation failed (file: ' + fileName + ', error: ' 
           + error.message + ')!');
       channel = null;
       abortSlicing();
       eventHandler.onError(error);
+    };
+    
+    handleDispose = function() {
+      channel = null;
+      abortSlicing();
+      eventHandler.onAbort();
     };
     
     uploadNextSlice = function(slice) {
@@ -101,7 +108,8 @@
             log('Upload of file "' + fileName + '" finished.');
             eventHandler.onDone();
           },
-          onFailure: onFailure            
+          onFailure: handleFailure,
+          dispose: handleDispose
         });
       } else {
         if (!sliceSent) {
@@ -113,7 +121,8 @@
               eventHandler.onProgress(slice.index, slice.total);
               slice.next();                                
             },
-            onFailure: onFailure  
+            onFailure: handleFailure,
+            dispose: handleDispose
           });
         } else {
           log('Uploading slice no. ' + slice.index + ' of file "' 
@@ -125,7 +134,8 @@
               eventHandler.onProgress(slice.index, slice.total);
               slice.next();                                
             },
-            onFailure: onFailure
+            onFailure: handleFailure,
+            dispose: handleDispose
           });            
         }            
       }                    
@@ -154,7 +164,7 @@
           log('Upload of file "' + fileName + '" aborted.');
           eventHandler.onAbort();
         },
-        onFailure: onFailure  
+        onFailure: handleFailure  
       });
     };
     
