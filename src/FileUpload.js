@@ -9,7 +9,7 @@
    * and logs it to the console.
    */
   log = function(message) {
-    global.console.log('[fm.fileupload] ' + message);
+    global.console.log('[fm.ws.filetransfer] ' + message);
   };
  
   /* Creates a default event handler method that just logs a message.
@@ -215,6 +215,6 @@
     return abortUpload;
   };
 
-  $.fm.core.ns('fm.fileupload').startUpload = startUpload;  
+  $.fm.core.ns('fm.ws.filetransfer').startUpload = startUpload;  
 })(this, (this.jQuery || this));
 

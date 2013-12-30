@@ -66,7 +66,7 @@
         fileUpload.defChannel('uploadFile');
         uploadFile = function(file) {
           global.console.log('Starting upload of file "' + file.name + '"...');
-          upload = $.fm.fileupload.startUpload(
+          upload = $.fm.ws.filetransfer.startUpload(
             file, 
             fileUpload.uploadFile(), 
             (128 * 1024), 
