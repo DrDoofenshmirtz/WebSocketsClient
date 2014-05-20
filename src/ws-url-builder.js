@@ -1,7 +1,21 @@
 (function(global, $) {
-  
+
+  var defaultHost = function() {
+    var host;
+ 
+    if (global.location) {
+      host = (global.location.hostname || '').toString().trim();
+    }  
+       
+    if (host.length <= 0) {
+      host = 'localhost';
+    }
+    
+    return host;
+  };
+ 
   var buildServiceURL = function(spec) {
-    var host = (spec.host || 'localhost').toString(),
+    var host = (spec.host || defaultHost()).toString(),
         port = (spec.port || 40) * 1,
         serviceName = (spec.serviceName || '').toString(),
         serviceURL = host + ':' + port; 
