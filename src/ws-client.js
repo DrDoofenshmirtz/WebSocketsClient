@@ -108,7 +108,7 @@
       var target = slots[notification.method];
       
       if (target instanceof Slot) {
-        target.onSignal(notification.params);
+        target.onSignal.apply(target, notification.params);
       }            
     };
     
